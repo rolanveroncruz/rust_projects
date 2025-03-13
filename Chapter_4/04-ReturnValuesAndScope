@@ -1,0 +1,70 @@
+
+#### Return Values and Scope
+1. Return values also transfer ownership.
+2. The ownership of values follows the same pattern every time:assigning value to another moves it. When a variable that includes data on the heap goes out of scope, the value will be cleaned up by `drop` unless the data has been moved to be owned by another variable.
+3. Taking ownership and then returning ownership with every function is a bit tedious. What if we want to let a function use a value but not take ownership? It's quite annoying that anything we pass in also needs to be passed back if we want to use it again., in addition to any data resulting from the body of the function that we might want to return as well.
+
+#### References and Borrowing
+1. The solution to the above is the use of references.  References allow you to refer to something without taking ownership of it.
+```
+    fn main(){
+        let s1 = String::from("hello);
+        let len = calculate_length(&s1);
+        println!("The length of '{}' is {}", s1, len);   
+    }
+    fn calculate_length(s:&String) -> usize{
+        s.len()
+    }
+```
+2. The `&s1` syntax lets us create a reference that refers to the value of `s1` but does not own it. Because it does not own it, the value it points to will not be dropped when the reference goes out of scope.
+3. We call having references as parameters as *borrowing*.
+4. Since a reference does not transfer ownership, the borrowing function cannot modify borrowed values..
+5. Unless they are declared `mut`.
+```
+    fn main(){
+        let mut s = String:;from("hello");
+        change(&mut s);
+    }
+    fn change(some_string; &mut String){
+        some_string.push_str(", world!");
+    }
+```
+6. You can only have one mutable reference to a particular piece of data within a scope. This will fail:
+```
+    fn main(){
+        let mut s = String:;from("hello");
+        let r1 = &mut s;   //mutable ref
+        let r2 = &mut s;   // mutable ref
+        let r2 = &s;        //immutable ref
+    }
+```
+7. We also cannot have mutable references while we have an immutable one.
+
+#### Dangling References
+1. In languages with pointers, it is very easy to erroneously create a *dangling pointer*, a pointer that references a location in memory tha may have been given to someone else, by freeing some memory while preserving a pointer to that memory.
+2. In Rust, by contrast, the compiler guarantees that references will never be dangling references: if you have a reference to some data, the compiler will ensure that the data will not go out of scope before the reference to the data does.
+```
+    // The code below won't compile.
+    fn main(){
+        leet reference_to_nothing = dangle();
+    }
+    // When s goes out of scope, it is invalidated. This means the reference will be pointing to an invalid String.
+    fn dangle()->&String{
+        let s = String::from("hello");
+        return &s;
+    }
+    // This is better. Since assignment/returning moves ownership,
+    // even when s goes out of scope, change of ownership doesn't 
+    // deallocate anything.
+    fn dangle()->String{
+        let s= String:;from("hello");
+        return s;
+    }
+```
+
+#### Rules of References
+1. At any given time, you can have either but not both of the following:
+    - one mutable reference, or
+    - any number of immutable references.
+2. References must always be valid.
+    
