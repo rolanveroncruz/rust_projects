@@ -1,2 +1,0 @@
-# Enums and Pattern Matching #
-
